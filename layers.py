@@ -157,7 +157,7 @@ class BiDAFAttention(nn.Module):
         x = torch.cat([c, a, c * a, c * b], dim=2)  # (bs, c_len, 4 * hid_size)
 
         return x
-
+        
     def get_similarity_matrix(self, c, q):
         """Get the "similarity matrix" between context and query (using the
         terminology of the BiDAF paper).
@@ -182,6 +182,37 @@ class BiDAFAttention(nn.Module):
 
         return s
 
+class SelfAttention(nn.Module):
+    
+    def __init__(self, hidden_size, drop_prob=0.1):
+        super(SelfAttention, self).__init__()
+        self.drop_prob = drop_prob
+        self.cc_weight = nn.Parameter(torch.zeros(1, 1, hidden_size))
+        nn.init.xavier_uniform_(self.cc_weight)
+        self.bias = nn.Parameter(torch.zeros(1))
+
+    def forward(self, c, c_mask):
+        batch_size, c_len, _ = c.size()
+        s = self.get_similarity_matrix(c)        # (batch_size, c_len, c_len)
+        c_mask = c_mask.view(batch_size, c_len, 1)  # (batch_size, c_len, 1)
+        s1 = masked_softmax(s, c_mask, dim=2)       # (batch_size, c_len, q_len)
+
+        # (bs, c_len, q_len) x (bs, q_len, hid_size) => (bs, c_len, hid_size)
+        a = torch.bmm(s1, c)
+        # (bs, c_len, c_len) x (bs, c_len, hid_size) => (bs, c_len, hid_size)
+        x = torch.cat([a, c * a], dim=2)  # (bs, c_len, 4 * hid_size)
+
+        return x
+
+    def get_similarity_matrix(self, c):
+        c = F.dropout(c, self.drop_prob, self.training)  # (bs, c_len, hid_size)
+
+        # Shapes: (batch_size, c_len, c_len)
+        s = torch.matmul(c * self.cc_weight, c.transpose(1, 2))
+        s = s + self.bias
+        return s
+
+    
 
 class BiDAFOutput(nn.Module):
     """Output layer used by BiDAF for question answering.
