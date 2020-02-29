@@ -187,6 +187,8 @@ class SelfAttention(nn.Module):
     def __init__(self, hidden_size, drop_prob=0.1):
         super(SelfAttention, self).__init__()
         self.drop_prob = drop_prob
+        self.c1_weight = nn.Parameter(torch.zeros(hidden_size, 1))
+        self.c2_weight = nn.Parameter(torch.zeros(hidden_size, 1))
         self.cc_weight = nn.Parameter(torch.zeros(1, 1, hidden_size))
         nn.init.xavier_uniform_(self.cc_weight)
         self.bias = nn.Parameter(torch.zeros(1))
@@ -208,8 +210,11 @@ class SelfAttention(nn.Module):
         c = F.dropout(c, self.drop_prob, self.training)  # (bs, c_len, hid_size)
 
         # Shapes: (batch_size, c_len, c_len)
-        s = torch.matmul(c * self.cc_weight, c.transpose(1, 2))
-        s = s + self.bias
+        d = torch.matmul(c, self.c_weight)
+        s0 = d.expand([-1, -1, q_len])
+        s1 = d.transpose(1, 2).expand([-1, c_len, -1])
+        s2 = torch.matmul(c * self.cc_weight, c.transpose(1, 2))
+        s = s0+s1+s2 + self.bias
         return s
 
     
@@ -229,7 +234,7 @@ class BiDAFOutput(nn.Module):
     """
     def __init__(self, hidden_size, drop_prob):
         super(BiDAFOutput, self).__init__()
-        self.att_linear_1 = nn.Linear(8 * hidden_size, 1)
+        self.att_linear_1 = nn.Linear(12 * hidden_size, 1)
         self.mod_linear_1 = nn.Linear(2 * hidden_size, 1)
 
         self.rnn = RNNEncoder(input_size=2 * hidden_size,
@@ -237,7 +242,7 @@ class BiDAFOutput(nn.Module):
                               num_layers=1,
                               drop_prob=drop_prob)
 
-        self.att_linear_2 = nn.Linear(8 * hidden_size, 1)
+        self.att_linear_2 = nn.Linear(12 * hidden_size, 1)
         self.mod_linear_2 = nn.Linear(2 * hidden_size, 1)
 
     def forward(self, att, mod, mask):
