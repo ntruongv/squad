@@ -207,12 +207,12 @@ class SelfAttention(nn.Module):
         return x
 
     def get_similarity_matrix(self, c):
+        c_len = c.size(1)
         c = F.dropout(c, self.drop_prob, self.training)  # (bs, c_len, hid_size)
 
         # Shapes: (batch_size, c_len, c_len)
-        d = torch.matmul(c, self.c_weight)
-        s0 = d.expand([-1, -1, q_len])
-        s1 = d.transpose(1, 2).expand([-1, c_len, -1])
+        s0 = torch.matmul(c, self.c1_weight).expand([-1, -1, c_len])
+        s1 = torch.matmul(c, self.c2_weight).transpose(1, 2).expand([-1, c_len, -1])
         s2 = torch.matmul(c * self.cc_weight, c.transpose(1, 2))
         s = s0+s1+s2 + self.bias
         return s
