@@ -215,8 +215,6 @@ class SelfAttention(nn.Module):
         s1 = torch.matmul(c, self.c2_weight).transpose(1, 2).expand([-1, c_len, -1])
         s2 = torch.matmul(c * self.cc_weight, c.transpose(1, 2))
         s = s0+s1+s2 + self.bias
-        s = s*(-1e32*torch.eye(c_len,c_len))+s
-        print(s)
         
         return s
 
