@@ -11,6 +11,19 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from util import masked_softmax
 
+class CNN(nn.Module):
+    def __init__(self, hidden_size, embed_size):
+        super(CNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.conv1d = nn.Conv1d(embed_size, hidden_size, kernel_size = 5, bias = True)
+
+    def forward(self, x, sentence_length, batch_size):
+        x_conv = self.conv1d(x)
+        x_relu = F.relu(x_conv)
+        x_conv_out = torch.max(x_relu, dim = -1)[0]
+        x_conv_out = x_conv_out.view(batch_size, sentence_length, self.hidden_size)
+        return x_conv_out
+
 
 class Embedding(nn.Module):
     """Embedding layer used by BiDAF, without the character-level component.
@@ -23,18 +36,22 @@ class Embedding(nn.Module):
         hidden_size (int): Size of hidden activations.
         drop_prob (float): Probability of zero-ing out activations
     """
-    def __init__(self, word_vectors, char_vectors hidden_size, drop_prob):
+    def __init__(self, word_vectors, char_vectors, hidden_size, drop_prob):
         super(Embedding, self).__init__()
         self.drop_prob = drop_prob
         self.word_embed = nn.Embedding.from_pretrained(word_vectors)
         self.char_embed = nn.Embedding.from_pretrained(char_vectors)
-        self.proj = nn.Linear(word_vectors.size(1) + char_vectors.size(1), hidden_size, bias=False)
+        self.proj = nn.Linear(word_vectors.size(1) + hidden_size, hidden_size, bias=False)
         self.hwy = HighwayEncoder(2, hidden_size)
+        self.cnn = CNN(hidden_size=hidden_size, embed_size=char_vectors.size(1))
 
-    def forward(self, x):
+    def forward(self, x, y):
         word_emb = self.word_embed(x)
-        char_emb = self.char_embed(x) # (batch_size, seq_len, embed_size)
-        emb = torch.cat(word_emb, char_emb, dim=-1)
+        batch_size, sentence_length, max_word_length = y.size()
+        y = y.contiguous().view(-1, max_word_length)     
+        y = self.char_embed(y)
+        char_emb = self.cnn(y.permute(0, 2, 1), sentence_length, batch_size)
+        emb = torch.cat((word_emb, char_emb), dim=-1)
         #emb = self.embed(x)   # (batch_size, seq_len, embed_size)
         emb = F.dropout(emb, self.drop_prob, self.training)
         emb = self.proj(emb)  # (batch_size, seq_len, hidden_size)
