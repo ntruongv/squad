@@ -23,15 +23,19 @@ class Embedding(nn.Module):
         hidden_size (int): Size of hidden activations.
         drop_prob (float): Probability of zero-ing out activations
     """
-    def __init__(self, word_vectors, hidden_size, drop_prob):
+    def __init__(self, word_vectors, char_vectors hidden_size, drop_prob):
         super(Embedding, self).__init__()
         self.drop_prob = drop_prob
-        self.embed = nn.Embedding.from_pretrained(word_vectors)
-        self.proj = nn.Linear(word_vectors.size(1), hidden_size, bias=False)
+        self.word_embed = nn.Embedding.from_pretrained(word_vectors)
+        self.char_embed = nn.Embedding.from_pretrained(char_vectors)
+        self.proj = nn.Linear(word_vectors.size(1) + char_vectors.size(1), hidden_size, bias=False)
         self.hwy = HighwayEncoder(2, hidden_size)
 
     def forward(self, x):
-        emb = self.embed(x)   # (batch_size, seq_len, embed_size)
+        word_emb = self.word_embed(x)
+        char_emb = self.char_embed(x) # (batch_size, seq_len, embed_size)
+        emb = torch.cat(word_emb, char_emb, dim=-1)
+        #emb = self.embed(x)   # (batch_size, seq_len, embed_size)
         emb = F.dropout(emb, self.drop_prob, self.training)
         emb = self.proj(emb)  # (batch_size, seq_len, hidden_size)
         emb = self.hwy(emb)   # (batch_size, seq_len, hidden_size)
@@ -139,6 +143,7 @@ class BiDAFAttention(nn.Module):
         for weight in (self.c_weight, self.q_weight, self.cq_weight):
             nn.init.xavier_uniform_(weight)
         self.bias = nn.Parameter(torch.zeros(1))
+        self.lin = nn.Linear(4*hidden_size, hidden_size)
 
     def forward(self, c, q, c_mask, q_mask):
         batch_size, c_len, _ = c.size()
@@ -156,6 +161,8 @@ class BiDAFAttention(nn.Module):
 
         x = torch.cat([c, a, c * a, c * b], dim=2)  # (bs, c_len, 4 * hid_size)
 
+        x = self.lin(x)
+        x = F.relu(x)
         return x
         
     def get_similarity_matrix(self, c, q):
@@ -187,13 +194,17 @@ class SelfAttention(nn.Module):
     def __init__(self, hidden_size, drop_prob=0.1):
         super(SelfAttention, self).__init__()
         self.drop_prob = drop_prob
-        self.c1_weight = nn.Parameter(torch.zeros(hidden_size, 1))
-        self.c2_weight = nn.Parameter(torch.zeros(hidden_size, 1))
-        self.cc_weight = nn.Parameter(torch.zeros(1, 1, hidden_size))
+        self.gru = nn.GRU(2*hidden_size, hidden_size, 1, batch_first=True, bidirectional=True)
+        self.c1_weight = nn.Parameter(torch.zeros(2*hidden_size, 1))
+        self.c2_weight = nn.Parameter(torch.zeros(2*hidden_size, 1))
+        self.cc_weight = nn.Parameter(torch.zeros(1, 1, 2*hidden_size))
         nn.init.xavier_uniform_(self.cc_weight)
         self.bias = nn.Parameter(torch.zeros(1))
+        self.lin = nn.Linear(4*hidden_size, 2*hidden_size)
+
 
     def forward(self, c, c_mask):
+        c, _ = self.gru(c)
         batch_size, c_len, _ = c.size()
         s = self.get_similarity_matrix(c)        # (batch_size, c_len, c_len)
         c_mask = c_mask.view(batch_size, c_len, 1)  # (batch_size, c_len, 1)
@@ -203,7 +214,8 @@ class SelfAttention(nn.Module):
         a = torch.bmm(s1, c)
         # (bs, c_len, c_len) x (bs, c_len, hid_size) => (bs, c_len, hid_size)
         x = torch.cat([a, c * a], dim=2)  # (bs, c_len, 4 * hid_size)
-
+        x = self.lin(x)
+        x = F.relu(x)
         return x
 
     def get_similarity_matrix(self, c):
@@ -235,7 +247,7 @@ class BiDAFOutput(nn.Module):
     """
     def __init__(self, hidden_size, drop_prob):
         super(BiDAFOutput, self).__init__()
-        self.att_linear_1 = nn.Linear(12 * hidden_size, 1)
+        self.att_linear_1 = nn.Linear(2 * hidden_size, 1)
         self.mod_linear_1 = nn.Linear(2 * hidden_size, 1)
 
         self.rnn = RNNEncoder(input_size=2 * hidden_size,
@@ -243,7 +255,7 @@ class BiDAFOutput(nn.Module):
                               num_layers=1,
                               drop_prob=drop_prob)
 
-        self.att_linear_2 = nn.Linear(12 * hidden_size, 1)
+        self.att_linear_2 = nn.Linear(2 * hidden_size, 1)
         self.mod_linear_2 = nn.Linear(2 * hidden_size, 1)
 
     def forward(self, att, mod, mask):
