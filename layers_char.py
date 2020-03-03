@@ -160,7 +160,7 @@ class BiDAFAttention(nn.Module):
         for weight in (self.c_weight, self.q_weight, self.cq_weight):
             nn.init.xavier_uniform_(weight)
         self.bias = nn.Parameter(torch.zeros(1))
-        self.lin = nn.Linear(4*hidden_size, hidden_size)
+        #self.lin = nn.Linear(4*hidden_size, hidden_size)
 
     def forward(self, c, q, c_mask, q_mask):
         batch_size, c_len, _ = c.size()
@@ -178,8 +178,8 @@ class BiDAFAttention(nn.Module):
 
         x = torch.cat([c, a, c * a, c * b], dim=2)  # (bs, c_len, 4 * hid_size)
 
-        x = self.lin(x)
-        x = F.relu(x)
+        #x = self.lin(x)
+        #x = F.relu(x)
         return x
         
     def get_similarity_matrix(self, c, q):
