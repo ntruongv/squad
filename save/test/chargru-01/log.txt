@@ -1,0 +1,28 @@
+[03.03.20 06:20:24] Args: {
+    "batch_size": 64,
+    "char_emb_file": "./data/char_emb.json",
+    "dev_eval_file": "./data/dev_eval.json",
+    "dev_record_file": "./data/dev.npz",
+    "hidden_size": 100,
+    "load_path": "save/train/chargru-01/best.pth.tar",
+    "max_ans_len": 15,
+    "name": "chargru",
+    "num_visuals": 10,
+    "num_workers": 4,
+    "save_dir": "./save/test/chargru-01",
+    "split": "dev",
+    "sub_file": "submission.csv",
+    "test_eval_file": "./data/test_eval.json",
+    "test_record_file": "./data/test.npz",
+    "train_eval_file": "./data/train_eval.json",
+    "train_record_file": "./data/train.npz",
+    "use_squad_v2": true,
+    "word_emb_file": "./data/word_emb.json"
+}
+[03.03.20 06:20:24] Loading embeddings...
+[03.03.20 06:20:28] Building model...
+[03.03.20 06:20:32] Loading checkpoint from save/train/chargru-01/best.pth.tar...
+[03.03.20 06:20:32] Building dataset...
+[03.03.20 06:20:33] Evaluating on dev split...
+[03.03.20 06:20:52] Dev NLL: 02.84, F1: 64.80, EM: 61.60, AvNA: 71.01
+[03.03.20 06:20:53] Writing submission file to ./save/test/chargru-01/dev_submission.csv...
