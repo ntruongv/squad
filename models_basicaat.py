@@ -4,7 +4,7 @@ Author:
     Chris Chute (chute@stanford.edu)
 """
 
-import layers
+import layers_satt as layers
 import torch
 import torch.nn as nn
 
