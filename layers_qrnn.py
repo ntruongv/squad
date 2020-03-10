@@ -7,7 +7,7 @@ Author:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchsru import SRU
+from sru_model import SRU
 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from util import masked_softmax
