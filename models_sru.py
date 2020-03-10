@@ -4,7 +4,7 @@ Author:
     Chris Chute (chute@stanford.edu)
 """
 
-import layers_qrnn as layers
+import layers_sru as layers
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
