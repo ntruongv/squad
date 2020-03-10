@@ -110,8 +110,8 @@ def main(args):
                 ##model now returns the modeling layer outputs also.
                 y1, y2 = y1.to(device), y2.to(device)
                 #h_vec = torch.stack(h_vec).to(device)
-                hidden_c_state = torch.stack(hidden_c_state).to(device)
-                hidden_q_state = torch.stack(hidden_q_state).to(device)
+                hidden_c_state = hidden_c_state.to(device) #torch.stack(hidden_c_state).to(device)
+                hidden_q_state = hidden_q_state.to(device) #torch.stack(hidden_q_state).to(device)
                 #ar = F.dropout(h_vec, p = 0.5) #dropout for the hidden states
                 #tar = h_vec[:,1:,:]-h_vec[:,:-1,:] #compute the temporal difference of the hidden states
                 alpha = 0.1#args.ar_param
@@ -127,9 +127,9 @@ def main(args):
  
                 #Find ar and tar for hidden states in the encoding rnn.
                 ar_c = F.dropout(hidden_c_state, p = p_ar)
-                tar_c = hidden_c_state[:,:,1:]-hidden_c_state[:,:,:-1]
+                tar_c = hidden_c_state[:,1:,:]-hidden_c_state[:,:-1,:]
                 ar_q = F.dropout(hidden_q_state, p_ar)
-                tar_q = hidden_q_state[:,:,1:]-hidden_q_state[:,:,:-1]
+                tar_q = hidden_q_state[:,1:,:]-hidden_q_state[:,:-1,:]
                 
                 
                 loss = F.nll_loss(log_p1, y1) + F.nll_loss(log_p2, y2) #+ alpha *torch.norm(ar*ar)+beta *torch.norm(tar*tar)
