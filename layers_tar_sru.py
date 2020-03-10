@@ -111,13 +111,6 @@ class RNNEncoder(nn.Module):
         self.drop_prob = drop_prob
         self.rnn = SRU(input_size, hidden_size, num_layers = 2*num_layers, dropout = drop_prob if num_layers > 1 else 0., bidirectional = True, layer_norm = False)
 
-        #self.rnn = QRNN(input_size, hidden_size, num_layers, bidirectional=True, dropout=drop_prob if num_layers > 1 else 0.)
-
-        #nn.LSTM(input_size, hidden_size, num_layers,
-        #                   batch_first=True,
-        #                   bidirectional=True,
-        #                   dropout=drop_prob if num_layers > 1 else 0.)
-
     def forward(self, x, lengths):
         # Save original padded length for use by pad_packed_sequence
         orig_len = x.size(1)
@@ -126,13 +119,13 @@ class RNNEncoder(nn.Module):
         lengths, sort_idx = lengths.sort(0, descending=True)
         x = x[sort_idx]     # (batch_size, seq_len, input_size)
         x = x.permute(1,0,2)
-        x = pack_padded_sequence(x, lengths, batch_first=False)
+        x = pack_padded_sequence(x, lengths, batch_first=True)
 
         # Apply RNN
-        x, _ = self.rnn(x)  # (batch_size, seq_len, 2 * hidden_size)
-
+        x, hidden_rnn_states = self.rnn(x)  # (batch_size, seq_len, 2 * hidden_size)
+        hidden_rnn_states = hidden_rnn_states.permute(1,0,2)
         # Unpack and reverse sort
-        x, _ = pad_packed_sequence(x, batch_first=False, total_length=orig_len)
+        x, _ = pad_packed_sequence(x, batch_first=True, total_length=orig_len)
         x = x.permute(1,0,2)
         _, unsort_idx = sort_idx.sort(0)
         x = x[unsort_idx]   # (batch_size, seq_len, 2 * hidden_size)
@@ -140,7 +133,7 @@ class RNNEncoder(nn.Module):
         # Apply dropout (RNN applies dropout after all but the last layer)
         x = F.dropout(x, self.drop_prob, self.training)
 
-        return x
+        return x, hidden_rnn_states
 
 
 class BiDAFAttention(nn.Module):
@@ -286,8 +279,9 @@ class BiDAFOutput(nn.Module):
 
     def forward(self, att, mod, mask):
         # Shapes: (batch_size, seq_len, 1)
+        #print(mod.shape)
         logits_1 = self.att_linear_1(att) + self.mod_linear_1(mod)
-        mod_2 = self.rnn(mod, mask.sum(-1))
+        mod_2, _ = self.rnn(mod, mask.sum(-1))
         logits_2 = self.att_linear_2(att) + self.mod_linear_2(mod_2)
 
         # Shapes: (batch_size, seq_len)
