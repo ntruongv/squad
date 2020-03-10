@@ -119,13 +119,13 @@ class RNNEncoder(nn.Module):
         lengths, sort_idx = lengths.sort(0, descending=True)
         x = x[sort_idx]     # (batch_size, seq_len, input_size)
         x = x.permute(1,0,2)
-        x = pack_padded_sequence(x, lengths, batch_first=True)
+        x = pack_padded_sequence(x, lengths, batch_first=False)
 
         # Apply RNN
         x, hidden_rnn_states = self.rnn(x)  # (batch_size, seq_len, 2 * hidden_size)
         hidden_rnn_states = hidden_rnn_states.permute(1,0,2)
         # Unpack and reverse sort
-        x, _ = pad_packed_sequence(x, batch_first=True, total_length=orig_len)
+        x, _ = pad_packed_sequence(x, batch_first=False, total_length=orig_len)
         x = x.permute(1,0,2)
         _, unsort_idx = sort_idx.sort(0)
         x = x[unsort_idx]   # (batch_size, seq_len, 2 * hidden_size)
