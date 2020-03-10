@@ -1,0 +1,28 @@
+[03.03.20 17:36:20] Args: {
+    "batch_size": 64,
+    "char_emb_file": "./data/char_emb.json",
+    "dev_eval_file": "./data/dev_eval.json",
+    "dev_record_file": "./data/dev.npz",
+    "hidden_size": 100,
+    "load_path": "save/train/charonly-01/best.pth.tar",
+    "max_ans_len": 15,
+    "name": "charonly",
+    "num_visuals": 10,
+    "num_workers": 4,
+    "save_dir": "./save/test/charonly-01",
+    "split": "dev",
+    "sub_file": "submission.csv",
+    "test_eval_file": "./data/test_eval.json",
+    "test_record_file": "./data/test.npz",
+    "train_eval_file": "./data/train_eval.json",
+    "train_record_file": "./data/train.npz",
+    "use_squad_v2": true,
+    "word_emb_file": "./data/word_emb.json"
+}
+[03.03.20 17:36:20] Loading embeddings...
+[03.03.20 17:36:24] Building model...
+[03.03.20 17:36:27] Loading checkpoint from save/train/charonly-01/best.pth.tar...
+[03.03.20 17:36:27] Building dataset...
+[03.03.20 17:36:28] Evaluating on dev split...
+[03.03.20 17:36:37] Dev NLL: 03.16, F1: 62.63, EM: 59.07, AvNA: 69.00
+[03.03.20 17:36:38] Writing submission file to ./save/test/charonly-01/dev_submission.csv...

@@ -114,13 +114,21 @@ def main(args):
                 hidden_q_state = torch.stack(hidden_q_state).to(device)
                 #ar = F.dropout(h_vec, p = 0.5) #dropout for the hidden states
                 #tar = h_vec[:,1:,:]-h_vec[:,:-1,:] #compute the temporal difference of the hidden states
-                alpha = 0.1
-                beta = 0.05
-                
+                alpha = 0.1#args.ar_param
+                beta = 0.05#args.tar_param
+                p_ar = args.ar_drop
+                if epoch<args.num_epochs/6:
+                    alpha = 0
+                    beta = 0
+                    
+                    
+
+
+ 
                 #Find ar and tar for hidden states in the encoding rnn.
-                ar_c = F.dropout(hidden_c_state, p = 0.5)
+                ar_c = F.dropout(hidden_c_state, p = p_ar)
                 tar_c = hidden_c_state[:,:,1:]-hidden_c_state[:,:,:-1]
-                ar_q = F.dropout(hidden_q_state, p = 0.5)
+                ar_q = F.dropout(hidden_q_state, p_ar)
                 tar_q = hidden_q_state[:,:,1:]-hidden_q_state[:,:,:-1]
                 
                 

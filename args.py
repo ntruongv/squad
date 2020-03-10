@@ -80,6 +80,7 @@ def get_setup_args():
                         type=lambda s: s.lower().startswith('t'),
                         default=True,
                         help='Process examples from the test set')
+    
 
     args = parser.parse_args()
 
@@ -134,6 +135,19 @@ def get_train_args():
                         type=float,
                         default=0.999,
                         help='Decay rate for exponential moving average of parameters.')
+    parser.add_argument('--ar_param',
+                        type=float,
+                        default=0.05,
+                        help='Regularization Parameter for AR')
+    parser.add_argument('--tar_param',
+                        type=float,
+                        default=0.05,
+                        help='Regularization Parameter for TAR')
+    parser.add_argument('--ar_drop',
+                        type=float,
+                        default=0.3,
+                        help='Dropout Rate for TAR')
+    
 
     args = parser.parse_args()
 
