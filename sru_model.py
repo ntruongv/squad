@@ -292,7 +292,7 @@ class SRU(nn.Module):
             input, lens = R.pad_packed_sequence(input,
                                                 batch_first=self.batch_first)
             lens_list = lens
-            lens = Variable(torch.IntTensor(lens))
+            lens = Variable(torch.LongTensor(lens))
 
             if input.data.is_cuda:
                 lens = lens.cuda(input.data.get_device())
