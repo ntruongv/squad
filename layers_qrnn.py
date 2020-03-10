@@ -7,7 +7,7 @@ Author:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from sru_model import SRU
+from sru import SRU
 
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from util import masked_softmax
@@ -109,9 +109,8 @@ class RNNEncoder(nn.Module):
                  drop_prob=0.):
         super(RNNEncoder, self).__init__()
         self.drop_prob = drop_prob
-        self.rnn = SRU(input_size, hidden_size, num_layers=num_layers, dropout=drop_prob if num_layers > 1 else 0.,
-                 rnn_dropout=0, batch_first=True, use_sigmoid=1,
-                 use_tanh=1, bidirectional=True)
+        self.rnn = SRU(input_size, hidden_size, num_layers = 2, dropout = drop_prob if num_layers > 1 else 0., bidirectional = True, layer_norm = False)
+
         #self.rnn = QRNN(input_size, hidden_size, num_layers, bidirectional=True, dropout=drop_prob if num_layers > 1 else 0.)
 
         #nn.LSTM(input_size, hidden_size, num_layers,
@@ -126,6 +125,7 @@ class RNNEncoder(nn.Module):
         # Sort by length and pack sequence for RNN
         lengths, sort_idx = lengths.sort(0, descending=True)
         x = x[sort_idx]     # (batch_size, seq_len, input_size)
+        x = x.permute(1,0,2)
         x = pack_padded_sequence(x, lengths, batch_first=True)
 
         # Apply RNN
@@ -133,6 +133,7 @@ class RNNEncoder(nn.Module):
 
         # Unpack and reverse sort
         x, _ = pad_packed_sequence(x, batch_first=True, total_length=orig_len)
+        x = x.permute(1,0,2)
         _, unsort_idx = sort_idx.sort(0)
         x = x[unsort_idx]   # (batch_size, seq_len, 2 * hidden_size)
 
