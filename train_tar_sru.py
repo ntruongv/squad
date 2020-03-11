@@ -120,6 +120,10 @@ def main(args):
                 if epoch<args.num_epochs/4:
                     alpha = 0
                     beta = 0
+                elif epoch<args.num_epochs*0.75:
+                    alpha = alpha / 2
+                    beta = beta / 2
+
                     
                     
 
@@ -130,10 +134,12 @@ def main(args):
                 tar_c = hidden_c_state[:,1:,:]-hidden_c_state[:,:-1,:]
                 ar_q = F.dropout(hidden_q_state, p_ar)
                 tar_q = hidden_q_state[:,1:,:]-hidden_q_state[:,:-1,:]
+                word_len = tar_q.shape[0]
+                batch_s = tar_q.shape[1]
                 
                 
                 loss = F.nll_loss(log_p1, y1) + F.nll_loss(log_p2, y2) #+ alpha *torch.norm(ar*ar)+beta *torch.norm(tar*tar)
-                loss2 = loss + alpha * torch.norm(ar_c) + alpha*torch.norm(ar_q)+beta*torch.norm(tar_c)+beta*torch.norm(tar_q)
+                loss2 = loss + alpha * torch.norm(ar_c) + alpha*torch.norm(ar_q)/(word_len*batch_s)+beta*torch.norm(tar_c)+beta*torch.norm(tar_q)/(word_len*batch_s)
                 loss_val = loss.item()
                 
 

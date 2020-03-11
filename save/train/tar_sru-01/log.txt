@@ -1,0 +1,57 @@
+[03.10.20 23:34:47] Args: {
+    "ar_drop": 0.3,
+    "ar_param": 0.05,
+    "batch_size": 64,
+    "char_emb_file": "./data/char_emb.json",
+    "dev_eval_file": "./data/dev_eval.json",
+    "dev_record_file": "./data/dev.npz",
+    "drop_prob": 0.2,
+    "ema_decay": 0.999,
+    "eval_steps": 50000,
+    "gpu_ids": [
+        0
+    ],
+    "hidden_size": 100,
+    "l2_wd": 0,
+    "load_path": null,
+    "lr": 0.5,
+    "max_ans_len": 15,
+    "max_checkpoints": 5,
+    "max_grad_norm": 5.0,
+    "maximize_metric": true,
+    "metric_name": "F1",
+    "name": "tar_sru",
+    "num_epochs": 30,
+    "num_visuals": 10,
+    "num_workers": 4,
+    "save_dir": "./save/train/tar_sru-01",
+    "seed": 224,
+    "tar_param": 0.05,
+    "test_eval_file": "./data/test_eval.json",
+    "test_record_file": "./data/test.npz",
+    "train_eval_file": "./data/train_eval.json",
+    "train_record_file": "./data/train.npz",
+    "use_squad_v2": true,
+    "word_emb_file": "./data/word_emb.json"
+}
+[03.10.20 23:34:47] Using random seed 224...
+[03.10.20 23:34:47] Loading embeddings...
+[03.10.20 23:34:53] Building model...
+[03.10.20 23:35:06] Saver will maximize F1...
+[03.10.20 23:35:06] Building dataset...
+[03.10.20 23:36:19] Training...
+[03.10.20 23:36:19] Starting epoch 1...
+[03.10.20 23:42:27] Evaluating at step 50048...
+[03.10.20 23:42:35] Saved checkpoint: ./save/train/tar_sru-01/step_50048.pth.tar
+[03.10.20 23:42:35] New best checkpoint at step 50048...
+[03.10.20 23:42:35] Dev NLL: 05.09, F1: 51.92, EM: 51.92, AvNA: 51.99
+[03.10.20 23:42:35] Visualizing in TensorBoard...
+[03.10.20 23:48:10] Evaluating at step 100096...
+[03.10.20 23:48:18] Saved checkpoint: ./save/train/tar_sru-01/step_100096.pth.tar
+[03.10.20 23:48:18] Dev NLL: 04.59, F1: 49.99, EM: 49.67, AvNA: 52.19
+[03.10.20 23:48:18] Visualizing in TensorBoard...
+[03.10.20 23:51:38] Starting epoch 2...
+[03.10.20 23:53:54] Evaluating at step 150101...
+[03.10.20 23:54:02] Saved checkpoint: ./save/train/tar_sru-01/step_150101.pth.tar
+[03.10.20 23:54:02] Dev NLL: 04.22, F1: 49.77, EM: 49.24, AvNA: 53.35
+[03.10.20 23:54:02] Visualizing in TensorBoard...
