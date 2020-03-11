@@ -117,12 +117,12 @@ def main(args):
                 alpha = 0.1#args.ar_param
                 beta = 0.05#args.tar_param
                 p_ar = args.ar_drop
-                if epoch<args.num_epochs/4:
-                    alpha = 0
-                    beta = 0
-                elif epoch<args.num_epochs*0.75:
-                    alpha = alpha / 2
-                    beta = beta / 2
+               # if epoch<args.num_epochs/4:
+               #     alpha = 0
+               #     beta = 0
+               # elif epoch<args.num_epochs*0.75:
+               #     alpha = alpha / 2
+               #     beta = beta / 2
 
                     
                     

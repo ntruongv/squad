@@ -1,0 +1,28 @@
+[03.11.20 16:06:54] Args: {
+    "batch_size": 64,
+    "char_emb_file": "./data/char_emb.json",
+    "dev_eval_file": "./data/dev_eval.json",
+    "dev_record_file": "./data/dev.npz",
+    "hidden_size": 100,
+    "load_path": "save/train/clean-tar-02/best.pth.tar",
+    "max_ans_len": 15,
+    "name": "clean-tar",
+    "num_visuals": 10,
+    "num_workers": 4,
+    "save_dir": "./save/test/clean-tar-02",
+    "split": "dev",
+    "sub_file": "submission.csv",
+    "test_eval_file": "./data/test_eval.json",
+    "test_record_file": "./data/test.npz",
+    "train_eval_file": "./data/train_eval.json",
+    "train_record_file": "./data/train.npz",
+    "use_squad_v2": true,
+    "word_emb_file": "./data/word_emb.json"
+}
+[03.11.20 16:06:54] Loading embeddings...
+[03.11.20 16:06:59] Building model...
+[03.11.20 16:07:02] Loading checkpoint from save/train/clean-tar-02/best.pth.tar...
+[03.11.20 16:07:02] Building dataset...
+[03.11.20 16:07:03] Evaluating on dev split...
+[03.11.20 16:07:11] Dev NLL: 02.70, F1: 66.12, EM: 62.81, AvNA: 72.26
+[03.11.20 16:07:11] Writing submission file to ./save/test/clean-tar-02/dev_submission.csv...
